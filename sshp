@@ -1,0 +1,51 @@
+#!/bin/bash  
+  
+RC_ERR_NO_HOST=11  
+RC_ERR_NO_PASSWORD=21  
+RC_ERR_NO_HOSTNAME=11  
+RC_SUCCESS=0  
+  
+pass_path=~/.ssh/sshp_pass  
+  
+host=$1  
+echoMan(){
+        cat $pass_path | while read line
+        do
+                shortname=`echo $line | cut -d' ' -f 1`
+                longname=`echo $line | cut -d' ' -f 2`
+                echo "$shortname => $longname"
+
+        done 
+        exit $RC_ERR_NO_HOST
+}
+  
+# arguments   
+if [ -z $host ]; then  
+        echoMan
+fi  
+  
+# read file  
+case $host in 
+"cat")
+cat $pass_path
+exit $RC_SUCCESS
+;;
+"vim")
+vim $pass_path
+exit $RC_SUCCESS
+;;
+*)
+hostname=`grep $host\  $pass_path | cut -d' ' -f 2`  
+pwd=`grep $host\  $pass_path | cut -d' ' -f 3`  
+if [ -z $hostname ]; then  
+        echoMan
+fi  
+if [ -z $pwd ]; then  
+        echoMan
+fi  
+echo "ssh $hostname"
+exec sshpass -p $pwd ssh $hostname -p22  
+exit $RC_SUCCESS;;
+
+esac 
+
